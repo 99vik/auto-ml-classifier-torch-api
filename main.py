@@ -8,7 +8,6 @@ CORS(app)
 def test_api():
     csv_file = request.files['file']
     file_contents = csv_file.read().decode('utf-8')
-    print(file_contents)
     reader = csv.reader(file_contents.splitlines(), delimiter=',')
     for row in reader:
         print(row)
