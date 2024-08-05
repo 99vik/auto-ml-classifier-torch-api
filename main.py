@@ -1,18 +1,17 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import csv
+from scripts.engine import engine
+
 app = Flask(__name__)
 CORS(app)
 
 @app.post("/api/test")
 def test_api():
-    csv_file = request.files['file']
-    file_contents = csv_file.read().decode('utf-8')
-    reader = csv.reader(file_contents.splitlines(), delimiter=',')
-    for row in reader:
-        print(row)
+    file = request.files['file']
+    engine(file)
 
-    return jsonify({'file_name': csv_file.filename}) 
+    return jsonify({'file_name': file.filename}) 
 
 if __name__ == "__main__":
     app.run(debug=True)
