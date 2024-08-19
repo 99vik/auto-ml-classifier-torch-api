@@ -1,6 +1,7 @@
 import torch
 from torch import nn
 from scripts.utils import accuracy_fn
+import json
 
 class Model(nn.Module):
         def __init__(self, input_size, output_size):
@@ -40,6 +41,17 @@ def train_loop(model, X_tr, y_tr, X_te, y_te, loss_fn, optimizer, iterations, pr
             test_acc = accuracy_fn(y_target=y_te, y_pred=test_logits_pred)
 
 
-        if (i+1) % 20 == 0:
-            progress_queue.put(f'Iteration {i+1}: TRAIN LOSS: {loss:.5f} | TRAIN ACCURACY: {acc:.1f}% | TEST_LOSS: {test_loss:.5f} | TEST ACCURACY: {test_acc:.1f}%')
+
+        if (i+1) % (iterations // 10) == 0:
+            # progress_queue.put(f'Iteration {i+1}: TRAIN LOSS: {loss:.5f} | TRAIN ACCURACY: {acc:.1f}% | TEST_LOSS: {test_loss:.5f} | TEST ACCURACY: {test_acc:.1f}%')
+            training_data = {
+                 "status": "training",
+                 "iteration": i+1,
+                 "train_loss": loss.item(),
+                 "train_acc": acc,
+                 "test_loss": test_loss.item(),
+                 "test_acc": test_acc
+            }
+            progress_queue.put(json.dumps(training_data))
+            # print(f'Iteration {i+1}: TRAIN LOSS: {loss:.5f} | TRAIN ACCURACY: {acc:.1f}% | TEST_LOSS: {test_loss:.5f} | TEST ACCURACY: {test_acc:.1f}%')
 
