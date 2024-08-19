@@ -16,7 +16,7 @@ class Model(nn.Module):
         def forward(self, x):
             return self.layer_stack(x)
         
-def train_loop(model, X_tr, y_tr, X_te, y_te, loss_fn, optimizer, iterations):
+def train_loop(model, X_tr, y_tr, X_te, y_te, loss_fn, optimizer, iterations, progress_queue):
      for i in range(iterations):
         model.train()
 
@@ -39,6 +39,7 @@ def train_loop(model, X_tr, y_tr, X_te, y_te, loss_fn, optimizer, iterations):
             test_loss = loss_fn(test_logits, y_te)
             test_acc = accuracy_fn(y_target=y_te, y_pred=test_logits_pred)
 
+
         if (i+1) % 20 == 0:
-            print(f'Iteration {i+1}: TRAIN LOSS: {loss:.5f} | TRAIN ACCURACY: {acc:.1f}% | TEST_LOSS: {test_loss:.5f} | TEST ACCURACY: {test_acc:.1f}%')
+            progress_queue.put(f'Iteration {i+1}: TRAIN LOSS: {loss:.5f} | TRAIN ACCURACY: {acc:.1f}% | TEST_LOSS: {test_loss:.5f} | TEST ACCURACY: {test_acc:.1f}%')
 

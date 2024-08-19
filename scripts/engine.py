@@ -6,12 +6,11 @@ from scripts.utils import to_split_tensor_data
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
-def engine(file):
-    LABEL_INDEX = 1
+def engine(file, label_index, progress_queue):
 
-    labels, data = csv_parser(label_index=LABEL_INDEX, file=file)
+    labels, data = csv_parser(label_index=label_index, file=file)
 
-    X_tr, X_te, y_tr, y_te = to_split_tensor_data(labels, data, LABEL_INDEX)
+    X_tr, X_te, y_tr, y_te = to_split_tensor_data(labels, data, label_index)
 
     X_tr = X_tr.to(device)
     X_te = X_te.to(device)
@@ -24,4 +23,4 @@ def engine(file):
     
     iterations = 200
 
-    train_loop(model, X_tr, y_tr, X_te, y_te, loss_fn, optimizer, iterations)
+    train_loop(model, X_tr, y_tr, X_te, y_te, loss_fn, optimizer, iterations, progress_queue)
