@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, Response
+from flask import Flask, request, Response
 from flask_cors import CORS
 from scripts.engine import engine
 import queue
@@ -12,15 +12,21 @@ progress_queue = queue.Queue()
 def train_model():
     file = request.files['file']
     label_index = int(request.form['label_index'])
-    import threading
-    threading.Thread(target=run_training, args=(file, label_index)).start()
+    iterations = int(request.form['iterations'])
+    learning_rate = float(request.form['learning_rate'])
+    activation_function = request.form['activation_function']
+    hidden_layers_str = request.form.get('hidden_layers', '')
 
-    return jsonify({'status': 'preparing'})
+    if hidden_layers_str:
+        hidden_layers = [int(num) for num in hidden_layers_str.split(',')]
+    else:
+        hidden_layers = []
 
-def run_training(file, label_index):
-    engine(file, label_index, progress_queue)
-    
+    progress_queue.put(json.dumps({"status": "preparing"}))
+    engine(file=file, label_index=label_index, iterations=iterations, learning_rate=learning_rate, activation_function=activation_function, progress_queue=progress_queue, hidden_layers=hidden_layers)
     progress_queue.put(json.dumps({"status": "complete"}))
+
+    return Response('success', status=200)
 
 @app.route("/api/train_progress", methods=['GET'])
 def train_progress():
@@ -32,7 +38,7 @@ def train_progress():
                 if '"status": "complete"' in progress:
                     break
             except queue.Empty:
-                yield f"data: Waiting for updates...\n\n"
+                yield f"data: {'status': 'waiting'}...\n\n"
 
     return Response(generate(), mimetype='text/event-stream')
 

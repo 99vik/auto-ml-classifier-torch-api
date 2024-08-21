@@ -4,21 +4,44 @@ from scripts.utils import accuracy_fn
 import json
 
 class Model(nn.Module):
-        def __init__(self, input_size, output_size):
+        def __init__(self, input_size, output_size, activation_function, hidden_layers):
             super().__init__()
-            self.layer_stack = nn.Sequential(
-                nn.Linear(in_features=input_size, out_features=10),
-                nn.BatchNorm1d(10),
-                nn.ReLU(),
-                nn.Dropout(p=0.02),
-                nn.Linear(in_features=10, out_features=output_size),
-            )
+            self.activation = self.get_activation(activation_function)
+            self.layer_stack = self.create_layers(input_size, output_size, hidden_layers)
+
+            # self.layer_stack = nn.Sequential(
+            #     nn.Linear(in_features=input_size, out_features=10),
+            #     self.activation,
+            #     # nn.BatchNorm1d(10),
+            #     # nn.Dropout(p=0.02),
+            #     nn.Linear(in_features=10, out_features=output_size),
+            # )
+
+        def get_activation(self, activation_function):
+            if activation_function == 'relu':
+                return nn.ReLU()
+            elif activation_function == 'sigmoid':
+                return nn.Sigmoid()
+            elif activation_function == 'tanh':
+                return nn.Tanh()
+            elif activation_function == 'linear':
+                return nn.Identity()
+            
+        def create_layers(self, input_size, output_size, hidden_layers):
+            layers = []
+            prev_size = input_size
+            for size in hidden_layers:
+                layers.append(nn.Linear(in_features=prev_size, out_features=size))
+                layers.append(self.activation)
+                prev_size = size
+            layers.append(nn.Linear(in_features=prev_size, out_features=output_size))
+            return nn.Sequential(*layers)
 
         def forward(self, x):
             return self.layer_stack(x)
         
 def train_loop(model, X_tr, y_tr, X_te, y_te, loss_fn, optimizer, iterations, progress_queue):
-     for i in range(iterations):
+     for i in range(iterations + 1):
         model.train()
 
         logits = model(X_tr)
@@ -42,16 +65,14 @@ def train_loop(model, X_tr, y_tr, X_te, y_te, loss_fn, optimizer, iterations, pr
 
 
 
-        if (i+1) % (iterations // 10) == 0:
-            # progress_queue.put(f'Iteration {i+1}: TRAIN LOSS: {loss:.5f} | TRAIN ACCURACY: {acc:.1f}% | TEST_LOSS: {test_loss:.5f} | TEST ACCURACY: {test_acc:.1f}%')
+        if (i) % (iterations / 10) == 0:
             training_data = {
                  "status": "training",
-                 "iteration": i+1,
-                 "train_loss": loss.item(),
-                 "train_acc": acc,
-                 "test_loss": test_loss.item(),
-                 "test_acc": test_acc
+                 "iteration": str(i),
+                 "trainLoss": loss.item(),
+                 "trainAccuracy": acc,
+                 "testLoss": test_loss.item(),
+                 "testAccuracy": test_acc
             }
             progress_queue.put(json.dumps(training_data))
-            # print(f'Iteration {i+1}: TRAIN LOSS: {loss:.5f} | TRAIN ACCURACY: {acc:.1f}% | TEST_LOSS: {test_loss:.5f} | TEST ACCURACY: {test_acc:.1f}%')
 
