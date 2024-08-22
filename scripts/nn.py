@@ -1,7 +1,7 @@
 import torch
 from torch import nn
-from scripts.utils import accuracy_fn
 import json
+from torchmetrics import Accuracy, F1Score
 
 class Model(nn.Module):
         def __init__(self, input_size, output_size, activation_function, hidden_layers):
@@ -9,13 +9,13 @@ class Model(nn.Module):
             self.activation = self.get_activation(activation_function)
             self.layer_stack = self.create_layers(input_size, output_size, hidden_layers)
 
-            # self.layer_stack = nn.Sequential(
-            #     nn.Linear(in_features=input_size, out_features=10),
-            #     self.activation,
-            #     # nn.BatchNorm1d(10),
-            #     # nn.Dropout(p=0.02),
-            #     nn.Linear(in_features=10, out_features=output_size),
-            # )
+            self.layer_stack = nn.Sequential(
+                nn.Linear(in_features=input_size, out_features=10),
+                self.activation,
+                # nn.BatchNorm1d(10),
+                # nn.Dropout(p=0.02),
+                nn.Linear(in_features=10, out_features=output_size),
+            )
 
         def get_activation(self, activation_function):
             if activation_function == 'relu':
@@ -40,39 +40,37 @@ class Model(nn.Module):
         def forward(self, x):
             return self.layer_stack(x)
         
-def train_loop(model, X_tr, y_tr, X_te, y_te, loss_fn, optimizer, iterations, progress_queue):
-     for i in range(iterations + 1):
-        model.train()
+def train_loop(model, X_tr, y_tr, X_te, y_te, loss_fn, optimizer, iterations, progress_queue, labels, device):
+    accuracy = Accuracy(task='multiclass', num_classes=len(labels)).to(device)
+    f1score = F1Score(task="multiclass", num_classes=len(labels)).to(device)
 
+    for i in range(iterations + 1):
+        model.train()
         logits = model(X_tr)
         logits_pred = torch.softmax(logits, dim=1).argmax(dim=1)
+        acc = accuracy(logits_pred, y_tr).item()*100
 
-        acc = accuracy_fn(y_target=y_tr, y_pred=logits_pred)
-        loss = loss_fn(logits, y_tr)
-
+        loss = loss_fn(logits, y_tr)    
         optimizer.zero_grad()
-
         loss.backward()
-
-        optimizer.step()
-
+        optimizer.step()    
         model.eval()
-        with torch.inference_mode():
-            test_logits = model(X_te)
-            test_logits_pred = torch.softmax(test_logits, dim=1).argmax(dim=1)
-            test_loss = loss_fn(test_logits, y_te)
-            test_acc = accuracy_fn(y_target=y_te, y_pred=test_logits_pred)
+        if (i) % (iterations / 20) == 0:
+            with torch.inference_mode():
+                test_logits = model(X_te)
+                test_logits_pred = torch.softmax(test_logits, dim=1).argmax(dim=1)
+                test_loss = loss_fn(test_logits, y_te)
+                test_acc = accuracy(test_logits_pred, y_te).item()*100
+                f1 = f1score(test_logits_pred, y_te)
 
-
-
-        if (i) % (iterations / 10) == 0:
             training_data = {
                  "status": "training",
                  "iteration": str(i),
                  "trainLoss": loss.item(),
                  "trainAccuracy": acc,
                  "testLoss": test_loss.item(),
-                 "testAccuracy": test_acc
+                 "testAccuracy": test_acc,
+                 "f1Score": f1.item()
             }
             progress_queue.put(json.dumps(training_data))
 
