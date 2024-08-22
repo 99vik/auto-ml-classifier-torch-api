@@ -1,7 +1,7 @@
 import torch
 from torch import nn
 import json
-from torchmetrics import Accuracy, F1Score
+from torchmetrics import Accuracy, F1Score, ConfusionMatrix
 
 class Model(nn.Module):
         def __init__(self, input_size, output_size, activation_function, hidden_layers):
@@ -43,6 +43,7 @@ class Model(nn.Module):
 def train_loop(model, X_tr, y_tr, X_te, y_te, loss_fn, optimizer, iterations, progress_queue, labels, device):
     accuracy = Accuracy(task='multiclass', num_classes=len(labels)).to(device)
     f1score = F1Score(task="multiclass", num_classes=len(labels)).to(device)
+    confmat = ConfusionMatrix(task="multiclass", num_classes=len(labels)).to(device)
 
     for i in range(iterations + 1):
         model.train()
@@ -62,6 +63,7 @@ def train_loop(model, X_tr, y_tr, X_te, y_te, loss_fn, optimizer, iterations, pr
                 test_loss = loss_fn(test_logits, y_te)
                 test_acc = accuracy(test_logits_pred, y_te).item()*100
                 f1 = f1score(test_logits_pred, y_te)
+                confusion_matrix = confmat(test_logits_pred, y_te)
 
             training_data = {
                  "status": "training",
@@ -70,7 +72,8 @@ def train_loop(model, X_tr, y_tr, X_te, y_te, loss_fn, optimizer, iterations, pr
                  "trainAccuracy": acc,
                  "testLoss": test_loss.item(),
                  "testAccuracy": test_acc,
-                 "f1Score": f1.item()
+                 "f1Score": f1.item(),
+                 "confusionMatrix": confusion_matrix.tolist()
             }
             progress_queue.put(json.dumps(training_data))
 
