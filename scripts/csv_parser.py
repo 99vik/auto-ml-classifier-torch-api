@@ -12,16 +12,6 @@ def csv_parser(label_index, file):
     labels = []
     data_types = []
 
-    # with open(file, 'r', newline='') as file:
-    #     reader = csv.reader(file)
-    #     for index, line in enumerate(reader):
-    #         if index == 0:
-    #             continue
-    #         else:
-    #             if (line[label_index] not in labels):
-    #                 labels.append(line[label_index])
-    #             data.append(line)
-
     file_contents = file.read().decode('utf-8')
     reader = csv.reader(file_contents.splitlines(), delimiter=',')
 

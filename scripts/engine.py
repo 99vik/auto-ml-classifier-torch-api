@@ -4,6 +4,13 @@ from scripts.csv_parser import csv_parser
 from scripts.nn import Model, train_loop
 from scripts.utils import to_split_tensor_data
 from torchmetrics import Accuracy
+import json
+
+class TensorEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, torch.Tensor):
+            return obj.cpu().numpy().tolist()
+        return super(TensorEncoder, self).default(obj)
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
@@ -24,4 +31,10 @@ def engine(file, label_index, iterations, learning_rate, activation_function, pr
     
     train_loop(model, X_tr, y_tr, X_te, y_te, loss_fn, optimizer, iterations, progress_queue, labels, device)
 
-    
+    total_params = sum(p.numel() for p in model.parameters())
+
+    state_dict = model.state_dict()
+    print(state_dict)
+    json_state_dict = json.dumps(state_dict, cls=TensorEncoder)
+
+    return json_state_dict

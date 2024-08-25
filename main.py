@@ -1,6 +1,7 @@
 from flask import Flask, request, Response
 from flask_cors import CORS
 from scripts.engine import engine
+from scripts.utils import turn_json_to_torch
 import queue
 import json
 app = Flask(__name__)
@@ -23,8 +24,9 @@ def train_model():
         hidden_layers = []
 
     progress_queue.put(json.dumps({"status": "preparing"}))
-    engine(file=file, label_index=label_index, iterations=iterations, learning_rate=learning_rate, activation_function=activation_function, progress_queue=progress_queue, hidden_layers=hidden_layers)
-    progress_queue.put(json.dumps({"status": "complete"}))
+    model =engine(file=file, label_index=label_index, iterations=iterations, learning_rate=learning_rate, activation_function=activation_function, progress_queue=progress_queue, hidden_layers=hidden_layers)
+    print(model)
+    progress_queue.put(json.dumps({"status": "complete", "model": model}))
 
     return Response('success', status=200)
 
@@ -41,6 +43,17 @@ def train_progress():
                 yield f"data: {'status': 'waiting'}...\n\n"
 
     return Response(generate(), mimetype='text/event-stream')
+
+@app.post("/api/predict")
+def predict():
+    model_raw = request.json.get('model')
+    label = request.json.get('label')
+    print(label)
+    
+    model = turn_json_to_torch(model_raw)
+    print(model)
+
+    return Response('success', status=200)
 
 if __name__ == "__main__":
     app.run(debug=True)
