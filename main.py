@@ -2,6 +2,7 @@ from flask import Flask, request, Response
 from flask_cors import CORS
 from scripts.engine import engine
 from scripts.utils import turn_json_to_torch
+from scripts.nn import Model
 import queue
 import json
 app = Flask(__name__)
@@ -24,9 +25,8 @@ def train_model():
         hidden_layers = []
 
     progress_queue.put(json.dumps({"status": "preparing"}))
-    model =engine(file=file, label_index=label_index, iterations=iterations, learning_rate=learning_rate, activation_function=activation_function, progress_queue=progress_queue, hidden_layers=hidden_layers)
-    print(model)
-    progress_queue.put(json.dumps({"status": "complete", "model": model}))
+    model, data_by_labels, labels = engine(file=file, label_index=label_index, iterations=iterations, learning_rate=learning_rate, activation_function=activation_function, progress_queue=progress_queue, hidden_layers=hidden_layers)
+    progress_queue.put(json.dumps({"status": "complete", "model": model, "dataByLabels": data_by_labels, "labels": labels}))
 
     return Response('success', status=200)
 
@@ -46,13 +46,20 @@ def train_progress():
 
 @app.post("/api/predict")
 def predict():
+    import torch
     model_raw = request.json.get('model')
     label = request.json.get('label')
-    print(label)
+    input_size = request.json.get('inputSize')
+    output_size = request.json.get('outputSize')
+    activation_function = request.json.get('activationFunction')
+    hidden_layers = request.json.get('hiddenLayers')
     
-    model = turn_json_to_torch(model_raw)
-    print(model)
-
+    model = Model(input_size=input_size, output_size=output_size, activation_function=activation_function, hidden_layers=hidden_layers)
+    state_dict = turn_json_to_torch(model_raw)
+    model.load_state_dict(state_dict)
+    print(input)
+    result = model(input).argmax(0)
+    print(result)
     return Response('success', status=200)
 
 if __name__ == "__main__":

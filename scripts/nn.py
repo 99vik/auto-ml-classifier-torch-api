@@ -9,13 +9,13 @@ class Model(nn.Module):
             self.activation = self.get_activation(activation_function)
             self.layer_stack = self.create_layers(input_size, output_size, hidden_layers)
 
-            self.layer_stack = nn.Sequential(
-                nn.Linear(in_features=input_size, out_features=10),
-                self.activation,
-                # nn.BatchNorm1d(10),
-                # nn.Dropout(p=0.02),
-                nn.Linear(in_features=10, out_features=output_size),
-            )
+            # self.layer_stack = nn.Sequential(
+            #     nn.Linear(in_features=input_size, out_features=10),
+            #     self.activation,
+            #     # nn.BatchNorm1d(10),
+            #     # nn.Dropout(p=0.02),
+            #     nn.Linear(in_features=10, out_features=output_size),
+            # )
 
         def get_activation(self, activation_function):
             if activation_function == 'relu':
