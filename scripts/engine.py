@@ -39,4 +39,4 @@ def engine(file, label_index, iterations, learning_rate, activation_function, pr
 
     json_state_dict = json.dumps(state_dict, cls=TensorEncoder)
 
-    return json_state_dict, data_by_labels, list(map(int, labels))
+    return json_state_dict, data_by_labels, list(map(int, labels)), total_params

@@ -25,8 +25,8 @@ def train_model():
         hidden_layers = []
 
     progress_queue.put(json.dumps({"status": "preparing"}))
-    model, data_by_labels, labels = engine(file=file, label_index=label_index, iterations=iterations, learning_rate=learning_rate, activation_function=activation_function, progress_queue=progress_queue, hidden_layers=hidden_layers)
-    progress_queue.put(json.dumps({"status": "complete", "model": model, "dataByLabels": data_by_labels, "labels": labels}))
+    model, data_by_labels, labels, total_params = engine(file=file, label_index=label_index, iterations=iterations, learning_rate=learning_rate, activation_function=activation_function, progress_queue=progress_queue, hidden_layers=hidden_layers)
+    progress_queue.put(json.dumps({"status": "complete", "model": model, "dataByLabels": data_by_labels, "labels": labels, "totalParams": total_params}))
 
     return Response('success', status=200)
 
