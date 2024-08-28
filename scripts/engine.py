@@ -34,9 +34,7 @@ def engine(file, label_index, iterations, learning_rate, activation_function, pr
     total_params = sum(p.numel() for p in model.parameters())
 
     state_dict = model.state_dict()
-    # print(model)
-    # print(state_dict)
 
     json_state_dict = json.dumps(state_dict, cls=TensorEncoder)
 
-    return json_state_dict, data_by_labels, list(map(int, labels)), total_params
+    return json_state_dict, data_by_labels, list(map(float, labels)), total_params

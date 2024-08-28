@@ -48,19 +48,19 @@ def train_progress():
 def predict():
     import torch
     model_raw = request.json.get('model')
-    label = request.json.get('label')
     input_size = request.json.get('inputSize')
     output_size = request.json.get('outputSize')
     activation_function = request.json.get('activationFunction')
     hidden_layers = request.json.get('hiddenLayers')
-    
+    inputsRaw = request.json.get('inputs')
+
+    print(model_raw, input_size, output_size, activation_function, hidden_layers, inputsRaw)
     model = Model(input_size=input_size, output_size=output_size, activation_function=activation_function, hidden_layers=hidden_layers)
     state_dict = turn_json_to_torch(model_raw)
     model.load_state_dict(state_dict)
-    print(input)
-    result = model(input).argmax(0)
-    print(result)
-    return Response('success', status=200)
+    input = torch.tensor(inputsRaw).float()
+    result = model(input).argmax(0).item()
+    return Response(json.dumps({'prediction': result}), status=200)
 
 if __name__ == "__main__":
     app.run(debug=True)

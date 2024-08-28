@@ -27,6 +27,8 @@ def csv_parser(label_index, file):
     for value in data[0]:
         data_types.append(determine_type(value))
 
+    data_types[label_index] = 'Nominal'
+
     for index, type in enumerate(data_types):
         if (type == 'Nominal'):
             unique_values = list(set(row[index] for row in data))
