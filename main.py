@@ -25,7 +25,12 @@ def train_model():
         hidden_layers = []
 
     progress_queue.put(json.dumps({"status": "preparing"}))
-    model, data_by_labels, labels, total_params = engine(file=file, label_index=label_index, iterations=iterations, learning_rate=learning_rate, activation_function=activation_function, progress_queue=progress_queue, hidden_layers=hidden_layers)
+    try:
+        model, data_by_labels, labels, total_params = engine(file=file, label_index=label_index, iterations=iterations, learning_rate=learning_rate, activation_function=activation_function, progress_queue=progress_queue, hidden_layers=hidden_layers)
+    except Exception as e:
+        progress_queue.put(json.dumps({"status": "error", "error": str(e)}))
+        return Response('success', status=200)
+        
     progress_queue.put(json.dumps({"status": "complete", "model": model, "dataByLabels": data_by_labels, "labels": labels, "totalParams": total_params}))
 
     return Response('success', status=200)
@@ -54,7 +59,6 @@ def predict():
     hidden_layers = request.json.get('hiddenLayers')
     inputsRaw = request.json.get('inputs')
 
-    print(model_raw, input_size, output_size, activation_function, hidden_layers, inputsRaw)
     model = Model(input_size=input_size, output_size=output_size, activation_function=activation_function, hidden_layers=hidden_layers)
     state_dict = turn_json_to_torch(model_raw)
     model.load_state_dict(state_dict)
