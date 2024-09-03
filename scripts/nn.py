@@ -26,7 +26,6 @@ class Model(nn.Module):
                 layers.append(nn.Linear(in_features=prev_size, out_features=size))
                 layers.append(self.activation)
                 if normalization:
-                    print('Normalization: ', normalization)
                     layers.append(nn.LayerNorm(size))
                 layers.append(nn.Dropout(p=dropout))
                 prev_size = size

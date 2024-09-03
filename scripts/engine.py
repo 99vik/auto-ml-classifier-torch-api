@@ -31,8 +31,6 @@ def engine(file, label_index, iterations, learning_rate, activation_function, pr
         total_params = sum(p.numel() for p in model.parameters())
 
         state_dict = model.state_dict()
-        print(model)
-        print(state_dict)
         json_state_dict = json.dumps(state_dict, cls=TensorEncoder)
     except Exception as e:
         raise RuntimeError(f'Error: {e}')

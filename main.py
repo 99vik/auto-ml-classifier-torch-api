@@ -70,9 +70,9 @@ def predict():
     activation_function = request.json.get('activationFunction')
     hidden_layers = request.json.get('hiddenLayers')    
     inputsRaw = request.json.get('inputs')
+    normalization = request.json.get('normalization')
 
-    model = Model(input_size=input_size, output_size=output_size, activation_function=activation_function, hidden_layers=hidden_layers, normalization=False, dropout=0.0)
-    print(model)
+    model = Model(input_size=input_size, output_size=output_size, activation_function=activation_function, hidden_layers=hidden_layers, normalization=normalization, dropout=0.0)
     state_dict = turn_json_to_torch(model_raw)
     model.load_state_dict(state_dict)
     input = torch.tensor(inputsRaw).float()
