@@ -4,18 +4,10 @@ import json
 from torchmetrics import Accuracy, F1Score, ConfusionMatrix
 
 class Model(nn.Module):
-        def __init__(self, input_size, output_size, activation_function, hidden_layers):
+        def __init__(self, input_size, output_size, activation_function, hidden_layers, normalization, dropout):
             super().__init__()
             self.activation = self.get_activation(activation_function)
-            self.layer_stack = self.create_layers(input_size, output_size, hidden_layers)
-
-            # self.layer_stack = nn.Sequential(
-            #     nn.Linear(in_features=input_size, out_features=10),
-            #     self.activation,
-            #     # nn.BatchNorm1d(10),
-            #     # nn.Dropout(p=0.02),
-            #     nn.Linear(in_features=10, out_features=output_size),
-            # )
+            self.layer_stack = self.create_layers(input_size, output_size, hidden_layers, normalization, dropout)
 
         def get_activation(self, activation_function):
             if activation_function == 'relu':
@@ -27,12 +19,15 @@ class Model(nn.Module):
             elif activation_function == 'linear':
                 return nn.Identity()
             
-        def create_layers(self, input_size, output_size, hidden_layers):
+        def create_layers(self, input_size, output_size, hidden_layers, normalization, dropout):
             layers = []
             prev_size = input_size
             for size in hidden_layers:
                 layers.append(nn.Linear(in_features=prev_size, out_features=size))
                 layers.append(self.activation)
+                if normalization:
+                    layers.append(nn.LayerNorm(size))
+                layers.append(nn.Dropout(p=dropout))
                 prev_size = size
             layers.append(nn.Linear(in_features=prev_size, out_features=output_size))
             return nn.Sequential(*layers)

@@ -17,6 +17,9 @@ def train_model():
     iterations = int(request.form['iterations'])
     learning_rate = float(request.form['learning_rate'])
     activation_function = request.form['activation_function']
+    normalization = bool(request.form['normalization'])
+    train_ratio = float(request.form['train_test_split'])/100
+    dropout = float(request.form['dropout'])/100
     hidden_layers_str = request.form.get('hidden_layers', '')
 
     if hidden_layers_str:
@@ -26,7 +29,16 @@ def train_model():
 
     progress_queue.put(json.dumps({"status": "preparing"}))
     try:
-        model, data_by_labels, labels, total_params = engine(file=file, label_index=label_index, iterations=iterations, learning_rate=learning_rate, activation_function=activation_function, progress_queue=progress_queue, hidden_layers=hidden_layers)
+        model, data_by_labels, labels, total_params = engine(file=file, 
+                                                             label_index=label_index, 
+                                                             iterations=iterations, 
+                                                             learning_rate=learning_rate, 
+                                                             activation_function=activation_function, 
+                                                             progress_queue=progress_queue, 
+                                                             hidden_layers=hidden_layers, 
+                                                             normalization=normalization, 
+                                                             train_ratio=train_ratio, 
+                                                             dropout=dropout)
     except Exception as e:
         progress_queue.put(json.dumps({"status": "error", "error": str(e)}))
         return Response('success', status=200)
@@ -59,7 +71,7 @@ def predict():
     hidden_layers = request.json.get('hiddenLayers')
     inputsRaw = request.json.get('inputs')
 
-    model = Model(input_size=input_size, output_size=output_size, activation_function=activation_function, hidden_layers=hidden_layers)
+    model = Model(input_size=input_size, output_size=output_size, activation_function=activation_function, hidden_layers=hidden_layers, normalization=False, dropout=0.0)
     state_dict = turn_json_to_torch(model_raw)
     model.load_state_dict(state_dict)
     input = torch.tensor(inputsRaw).float()
