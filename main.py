@@ -17,7 +17,7 @@ def train_model():
     iterations = int(request.form['iterations'])
     learning_rate = float(request.form['learning_rate'])
     activation_function = request.form['activation_function']
-    normalization = bool(request.form['normalization'])
+    normalization = request.form['normalization'].lower() == 'true'
     train_ratio = float(request.form['train_test_split'])/100
     dropout = float(request.form['dropout'])/100
     hidden_layers_str = request.form.get('hidden_layers', '')
@@ -68,10 +68,11 @@ def predict():
     input_size = request.json.get('inputSize')
     output_size = request.json.get('outputSize')
     activation_function = request.json.get('activationFunction')
-    hidden_layers = request.json.get('hiddenLayers')
+    hidden_layers = request.json.get('hiddenLayers')    
     inputsRaw = request.json.get('inputs')
 
     model = Model(input_size=input_size, output_size=output_size, activation_function=activation_function, hidden_layers=hidden_layers, normalization=False, dropout=0.0)
+    print(model)
     state_dict = turn_json_to_torch(model_raw)
     model.load_state_dict(state_dict)
     input = torch.tensor(inputsRaw).float()
