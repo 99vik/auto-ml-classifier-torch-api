@@ -8,6 +8,9 @@ import json
 app = Flask(__name__)
 CORS(app)
 
+app.config['DEBUG'] = False
+
+
 progress_queue = queue.Queue()
 
 @app.post("/api/train_model")
@@ -80,4 +83,6 @@ def predict():
     return Response(json.dumps({'prediction': result}), status=200)
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host='127.0.0.1', port=5000)
+
+# waitress-serve --listen=127.0.0.1:5000 app:app
