@@ -10,7 +10,7 @@ CORS(app)
 
 progress_queue = queue.Queue()
 
-@app.post("/api/train_model")
+@app.post("/api/train-model")
 def train_model():
     try:
         params = parse_train_request_params(request)
@@ -21,7 +21,7 @@ def train_model():
         
     return Response('success', status=200)
 
-@app.get("/api/train_progress")
+@app.get("/api/train-progress")
 def train_progress():
     def generate():
         while True:
