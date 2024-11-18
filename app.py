@@ -40,7 +40,7 @@ def train_model():
                                                              normalization=normalization, 
                                                              train_ratio=train_ratio, 
                                                              dropout=dropout,
-                                                             random_seed= int(random_seed) if random_seed else None
+                                                             random_seed= int(random_seed) if random_seed != 'false' else None
                                                              )
     except Exception as e:
         progress_queue.put(json.dumps({"status": "error", "error": str(e)}))
