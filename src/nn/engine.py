@@ -1,8 +1,8 @@
 import torch
 from torch import nn
-from scripts.csv_parser import csv_parser
-from scripts.nn import Model, train_loop
-from scripts.utils import to_split_tensor_data
+from src.nn.Model import Model
+from src.nn.train_loop import train_loop
+from src.nn.helpers import to_split_tensor_data, csv_parser
 import json
 
 class TensorEncoder(json.JSONEncoder):
