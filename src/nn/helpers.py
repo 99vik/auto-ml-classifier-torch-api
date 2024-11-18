@@ -36,11 +36,11 @@ def csv_parser(label_index, file):
     labels = []
     data_types = []
     data_by_labels = []
-
     file_contents = file.read().decode('utf-8')
     reader = csv.reader(file_contents.splitlines(), delimiter=',')
 
     for index, line in enumerate(reader):
+
         if index == 0:
             continue
         else:
@@ -56,6 +56,7 @@ def csv_parser(label_index, file):
     for index, type in enumerate(data_types):
         if (type == 'Nominal'):
             unique_values = list(set(row[index] for row in data))
+            unique_values.sort()
             data_by_labels.append(unique_values)
             if index == label_index:
                 labels = [str(unique_values.index(label)) for label in labels]

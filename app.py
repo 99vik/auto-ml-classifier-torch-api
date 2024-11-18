@@ -10,7 +10,6 @@ CORS(app)
 
 progress_queue = queue.Queue()
 
-
 @app.post("/api/train_model")
 def train_model():
     try:
