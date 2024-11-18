@@ -1,4 +1,4 @@
-def to_split_tensor_data(labels, data, label_index, train_ratio):
+def to_split_tensor_data(labels, data, label_index, train_ratio, random_seed):
     import torch
     from sklearn.model_selection import train_test_split
 
@@ -11,7 +11,7 @@ def to_split_tensor_data(labels, data, label_index, train_ratio):
     y = torch.tensor(y)
     X = torch.tensor(X)
 
-    return train_test_split(X, y, train_size=train_ratio)
+    return train_test_split(X, y, train_size=train_ratio, random_state= (random_seed if random_seed else None))
 
 def turn_json_to_torch(model_raw):
     import torch

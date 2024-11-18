@@ -8,9 +8,6 @@ import json
 app = Flask(__name__)
 CORS(app)
 
-app.config['DEBUG'] = False
-
-
 progress_queue = queue.Queue()
 
 @app.post("/api/train_model")
@@ -23,6 +20,7 @@ def train_model():
     normalization = request.form['normalization'].lower() == 'true'
     train_ratio = float(request.form['train_test_split'])/100
     dropout = float(request.form['dropout'])/100
+    random_seed = request.form.get('random_seed')
     hidden_layers_str = request.form.get('hidden_layers', '')
 
     if hidden_layers_str:
@@ -41,7 +39,9 @@ def train_model():
                                                              hidden_layers=hidden_layers, 
                                                              normalization=normalization, 
                                                              train_ratio=train_ratio, 
-                                                             dropout=dropout)
+                                                             dropout=dropout,
+                                                             random_seed= int(random_seed) if random_seed else None
+                                                             )
     except Exception as e:
         progress_queue.put(json.dumps({"status": "error", "error": str(e)}))
         return Response('success', status=200)
@@ -83,6 +83,4 @@ def predict():
     return Response(json.dumps({'prediction': result}), status=200)
 
 if __name__ == "__main__":
-    app.run(host='127.0.0.1', port=5000)
-
-# waitress-serve --listen=127.0.0.1:5000 app:app
+    app.run(host='127.0.0.1', port=5000 , debug=True)
