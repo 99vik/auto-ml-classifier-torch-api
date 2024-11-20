@@ -13,7 +13,17 @@ class TensorEncoder(json.JSONEncoder):
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
-def engine(file, label_index, iterations, learning_rate, activation_function, progress_queue, hidden_layers, normalization, train_ratio, dropout, random_seed):
+def engine(file, 
+           label_index, 
+           iterations, 
+           learning_rate, 
+           activation_function, 
+           progress_queue, 
+           hidden_layers, 
+           normalization, 
+           train_ratio, 
+           dropout, 
+           random_seed):
     try:
         labels, data, data_by_labels = csv_parser(label_index=label_index, file=file)
         X_tr, X_te, y_tr, y_te = to_split_tensor_data(labels, data, label_index, train_ratio, random_seed)
@@ -25,7 +35,12 @@ def engine(file, label_index, iterations, learning_rate, activation_function, pr
         if (random_seed):
             torch.manual_seed(random_seed)
         
-        model = Model(input_size=len(X_tr[0]), output_size=len(labels), activation_function=activation_function, hidden_layers=hidden_layers, normalization=normalization, dropout=dropout).to(device)
+        model = Model(input_size=len(X_tr[0]), 
+                      output_size=len(labels), 
+                      activation_function=activation_function, 
+                      hidden_layers=hidden_layers, 
+                      normalization=normalization, 
+                      dropout=dropout).to(device)
         loss_fn = nn.CrossEntropyLoss()
         optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
 

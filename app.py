@@ -8,8 +8,6 @@ import json
 app = Flask(__name__)
 CORS(app)
 
-progress_queue = queue.Queue()
-
 @app.post("/api/train-model")
 def train_model():
     try:
@@ -37,9 +35,15 @@ def train_progress():
 
 @app.post("/api/predict")
 def predict():
-    params = parse_predict_request_params(request)
-    result = predict_logic(params)
+    try:
+        params = parse_predict_request_params(request)
+        result = predict_logic(params)
+    except Exception as e:
+        return Response(f'error: {str(e)}', status=500)
+    
     return Response(json.dumps({'prediction': result}), status=200)
 
 if __name__ == "__main__":
-    app.run(host='127.0.0.1', port=5000 , debug=True)
+    app.run(port=5000 , debug=False)
+
+
